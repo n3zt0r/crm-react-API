@@ -46,42 +46,35 @@ app.get("/", async (req, res) => {
 // ***************** Get a list of clients *****************
 app.get("/clients", async (req, res) => {
   const clients = await Client.find();
-
-  console.log(`List of clients obtained succefully!`);
-  res.json(clients);
+  res.json({ message: "List of clients obtained succefully!", data: clients });
 });
 
 // ********************* Find a client *********************
 app.get("/clients/:id", async (req, res) => {
   const _id = req.params.id;
-
   // *** Validation ***
   try {
     const client = await Client.findOne({ _id });
-
-    console.log(`Client obtained succefully!`);
-    res.json(client);
+    res.json({ message: "Client obtained succefully!", data: client });
   } catch (error) {
     // *** Handle error ***
-    console.log(`Find client error: ${error.message}`);
-    res.send(`Find client error: ${error.message}`);
+    res.send({
+      message: "The client could not be found. Invalid client ID.",
+      error: error.message,
+    });
   }
 });
 
 // ******************* Add a new client *******************
 app.post("/clients", async (req, res) => {
   const newClient = new Client(req.body);
-
   // *** Validation ***
   try {
     await Client.insertMany(newClient);
-
-    console.log(`New client added succefully!`);
-    res.json(newClient);
+    res.json({ message: "New client added succefully!", data: newClient });
   } catch (error) {
     // *** Handle error ***
-    console.log(`Add new client error: ${error.message}`);
-    res.send(`Add new client error: ${error.message}`);
+    res.send({ message: "Couldn't add a new client.", error: error.message });
   }
 });
 
@@ -89,39 +82,32 @@ app.post("/clients", async (req, res) => {
 app.put("/clients/:id", async (req, res) => {
   const _id = req.params.id;
   const editClient = new Client({ _id, ...req.body });
-
   // *** Validation ***
   try {
     const result = await Client.findOneAndUpdate({ _id }, editClient);
-
-    if (result) {
-      console.log(`Updated client succefully!`);
-      res.json(editClient);
-    } else {
-      // *** Handle error ***
-      console.log("Error: Client not found.");
-      res.send("Error: Client not found.");
-    }
+    res.json({ message: "Client updated succefully!", data: editClient });
   } catch (error) {
     // *** Handle error ***
-    console.log(`Update client error: ${error.message}`);
-    res.send(`Update client error: ${error.message}`);
+    res.send({
+      message: "The client could not be updated.",
+      error: error.message,
+    });
   }
 });
 
 // ******************** Delete a client ********************
 app.delete("/clients/:id", async (req, res) => {
   const _id = req.params.id;
-  const result = await Client.deleteOne({ _id });
-
   // *** Validation ***
-  if (result.deletedCount > 0) {
-    console.log(`Deleted client succefully!`);
-    res.json(`Deleted client succefully!`);
-  } else {
+  try {
+    const result = await Client.deleteOne({ _id });
+    res.json({ message: "Deleted client succefully!", data: result });
+  } catch (error) {
     // *** Handle error ***
-    console.log("Error: Client not found.");
-    res.send("Error: Client not found.");
+    res.json({
+      message: "The client could not be deleted. Invalid client ID.",
+      error: error.message,
+    });
   }
 });
 
