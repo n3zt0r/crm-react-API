@@ -1,11 +1,12 @@
 import express from "express";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
+import cors from "cors";
 import "dotenv/config";
 
 const { Schema, model } = mongoose;
 const app = express();
-const port = process.env.port || 3000;
+const port = process.env.PORT || 3000;
 const dataBaseURI = process.env.MONGODB_URI;
 
 // ****************** Database connection ******************
@@ -37,16 +38,19 @@ const client = new Schema({
 const Client = model("Clients", client);
 // ********************************************************
 
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", async (req, res) => {
-  res.send("Welcome to my API. Nestor López");
+  res.status(200).send("Welcome to my API. Nestor López");
 });
 
 // ***************** Get a list of clients *****************
 app.get("/clients", async (req, res) => {
   const clients = await Client.find();
-  res.json({ message: "List of clients obtained succefully!", data: clients });
+  res
+    .status(200)
+    .json({ message: "List of clients obtained succefully!", data: clients });
 });
 
 // ********************* Find a client *********************
@@ -55,7 +59,9 @@ app.get("/clients/:id", async (req, res) => {
   // *** Validation ***
   try {
     const client = await Client.findOne({ _id });
-    res.json({ message: "Client obtained succefully!", data: client });
+    res
+      .status(200)
+      .json({ message: "Client obtained succefully!", data: client });
   } catch (error) {
     // *** Handle error ***
     res.send({
@@ -67,11 +73,14 @@ app.get("/clients/:id", async (req, res) => {
 
 // ******************* Add a new client *******************
 app.post("/clients", async (req, res) => {
-  const newClient = new Client(req.body);
+  const requestClient = req.body;
+  const newClient = new Client(requestClient);
   // *** Validation ***
   try {
     await Client.insertMany(newClient);
-    res.json({ message: "New client added succefully!", data: newClient });
+    res
+      .status(200)
+      .json({ message: "New client added succefully!", data: newClient });
   } catch (error) {
     // *** Handle error ***
     res.send({ message: "Couldn't add a new client.", error: error.message });
@@ -85,7 +94,9 @@ app.put("/clients/:id", async (req, res) => {
   // *** Validation ***
   try {
     const result = await Client.findOneAndUpdate({ _id }, editClient);
-    res.json({ message: "Client updated succefully!", data: editClient });
+    res
+      .status(200)
+      .json({ message: "Client updated succefully!", data: editClient });
   } catch (error) {
     // *** Handle error ***
     res.send({
@@ -101,7 +112,9 @@ app.delete("/clients/:id", async (req, res) => {
   // *** Validation ***
   try {
     const result = await Client.deleteOne({ _id });
-    res.json({ message: "Deleted client succefully!", data: result });
+    res
+      .status(200)
+      .json({ message: "Deleted client succefully!", data: result });
   } catch (error) {
     // *** Handle error ***
     res.json({
